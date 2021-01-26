@@ -38,12 +38,12 @@
     },
     "ubuntuOSVersion": {
       "type": "string",
-      "defaultValue": "18_04-lts-gen2",
+      "defaultValue": "18.04-LTS",
       "metadata": {
         "description": "The Ubuntu version"
       },
       "allowedValues": [
-        "18_04-lts-gen2"
+        "18.04-LTS"
       ]
     },
     "mode": {

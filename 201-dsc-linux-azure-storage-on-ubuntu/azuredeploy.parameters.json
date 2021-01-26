@@ -15,7 +15,7 @@
       "value": "Standard_D1"
     },
     "ubuntuOSVersion": {
-      "value": "18_04-lts-gen2"
+      "value": "18.04-LTS"
     },
     "mode": {
       "value": "Install"
