@@ -26,14 +26,7 @@
         "description": "VM size"
       },
       "allowedValues": [
-        "Standard_D1",
-        "Standard_D2",
-        "Standard_D3",
-        "Standard_D4",
-        "Standard_D11",
-        "Standard_D12",
-        "Standard_D13",
-        "Standard_D14"
+        "Standard_D1_v2"
       ]
     },
     "ubuntuOSVersion": {
@@ -117,6 +110,18 @@
       "metadata": {
         "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
       }
+    },
+    "scriptFileUri": {
+      "type": "string",
+      "metadata": {
+        "description": "Script file Uri to be executed by custom script extension, must be named script.sh"
+      }
+    },
+    "mofFileUri": {
+      "type": "string",
+      "metadata": {
+        "description": "PowerSTIG generated mof file Uri"
+      }
     }
   },
   "variables": {
@@ -156,7 +161,7 @@
       }
     },
     {
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('publicIPAddressName')]",
       "location": "[parameters('location')]",
@@ -168,7 +173,7 @@
       }
     },
     {
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
       "location": "[parameters('location')]",
@@ -189,7 +194,7 @@
       }
     },
     {
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicName')]",
       "location": "[parameters('location')]",
@@ -215,7 +220,7 @@
       }
     },
     {
-      "apiVersion": "2017-03-30",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('vmName')]",
       "location": "[parameters('location')]",
@@ -256,7 +261,7 @@
       }
     },
     {
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('vmName'),'/enabledsc')]",
       "location": "[parameters('location')]",
@@ -266,7 +271,8 @@
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
         "type": "DSCForLinux",
-        "typeHandlerVersion": "2.0",
+        "typeHandlerVersion": "2.71",
+        "autoUpgradeMinorVersion": "true",
         "settings": {
           "Mode": "[parameters('mode')]",
           "FileUri": "[parameters('fileUri')]"
@@ -276,6 +282,33 @@
           "StorageAccountKey": "[parameters('storageAccountKey')]",
           "RegistrationUrl": "[parameters('registrationUrl')]",
           "RegistrationKey": "[parameters('registrationKey')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2019-07-01",
+      "name": "[concat(parameters('vmName'), '/deploy-stigs')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), '/extensions/enabledsc')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.1",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+            "skipDos2Unix": true,
+            "fileUris": [
+              "[parameters('scriptFileUri')]",
+              "[parameters('mofFileUri')]"
+            ],
+            "timestamp": 123456789
+        },
+        "protectedSettings": {
+            "commandToExecute": "sh script.sh"
         }
       }
     }

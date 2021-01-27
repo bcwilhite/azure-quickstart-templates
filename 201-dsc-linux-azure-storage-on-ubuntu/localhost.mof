@@ -1,0 +1,36 @@
+/*
+@TargetNode='localhost'
+@GeneratedBy=Brian
+@GenerationDate=01/27/2021 15:52:51
+@GenerationHost=BRIAN-I9
+*/
+
+instance of MSFT_nxScriptResource as $MSFT_nxScriptResource1ref
+{
+ResourceID = "[nxScript]EmptyDsc";
+ ModuleVersion = "1.0";
+ SourceInfo = "::7::9::nxScript";
+ TestScript = "#!/bin/bash\nexit 0'";
+ SetScript = "#!/bin/bash\necho emptySet";
+ GetScript = "#!/bin/bash\necho emptyGet";
+ ModuleName = "nx";
+ ConfigurationName = "ubuntuEmptyDsc";
+};
+instance of OMI_ConfigurationDocument
+
+                    {
+ Version="2.0.0";
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+                        Author="Brian";
+
+                        GenerationDate="01/27/2021 15:52:51";
+
+                        GenerationHost="BRIAN-I9";
+
+                        Name="ubuntuEmptyDsc";
+
+                    };
