@@ -1,5 +1,5 @@
 echo "Move Pending.mof to configuration store..."
-mv ./Pending.mof /etc/opt/omi/conf/dsc/configuration/Pending.mof
+mv ./*.mof /etc/opt/omi/conf/dsc/configuration/Pending.mof
 echo "Move Pending.mof to configuration store... Complete"
 echo "Execute Register.py --RefreshMode Push --ConfigurationMode ApplyOnly..."
 /opt/microsoft/dsc/Scripts/Register.py --RefreshMode Push --ConfigurationMode ApplyOnly
