@@ -291,7 +291,6 @@
       "name": "[concat(parameters('vmName'), '/deploy-stigs')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
         "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), '/extensions/enabledsc')]"
       ],
       "properties": {
