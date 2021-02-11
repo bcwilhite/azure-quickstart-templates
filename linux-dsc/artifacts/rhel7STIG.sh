@@ -1,10 +1,18 @@
+set -e
+
 # dsc deployment automation
 echo "Move (OS Specific) .mof to configuration store as Pending.mof..."
 mv ./*.mof /etc/opt/omi/conf/dsc/configuration/Pending.mof
 echo "Execute Register.py --RefreshMode Push --ConfigurationMode ApplyOnly..."
-/opt/microsoft/dsc/Scripts/Register.py --RefreshMode Push --ConfigurationMode ApplyOnly
+/opt/microsoft/dsc/Scripts/Register.py --RefreshMode Push --ConfigurationMode ApplyOnly > ./dscresults.log
 echo "Execute PerformRequiredConfigurationChecks.py to apply the Pending.mof configuration..."
-/opt/microsoft/dsc/Scripts/PerformRequiredConfigurationChecks.py
+/opt/microsoft/dsc/Scripts/PerformRequiredConfigurationChecks.py >> ./dscresults.log
+if grep -q "ReturnValue=[^0]" ./dscresults.log; then
+    echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details, exitting returncode 1..."
+    exit 1
+else
+    echo "Applied Desired State Configurations successfully..."
+fi
 
 # authentication/password/session automation
 echo "Backing up password-auth, postlogin and system-auth files..."
@@ -44,14 +52,19 @@ echo 'tmpfs /dev/shm tmpfs defaults,nodev,nosuid,noexec 0 0' >> /etc/fstab
 
 # fips automation
 echo "Recreating initramfs with dracut to support FIPS..."
-dracut --force --verbose
+dracut --force --verbose 2>&1
 echo "Modifying grub to support FIPS..."
 BOOT_UUID=$(findmnt --noheadings --output uuid --target /boot)
 sed -i "s/\(GRUB_CMDLINE_LINUX=\".*[^\"]\+\)/\1 fips=1 boot=UUID=${BOOT_UUID}/g" /etc/default/grub
 echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
-grub2-mkconfig -o /boot/grub2/grub.cfg
-echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
-grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg 2>&1
+if grep -q 'ID="centos"' /etc/os-release ; then
+    echo "Regenerating /boot/efi/EFI/centos/grub.cfg (UEFI)..."
+    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg 2>&1
+else
+    echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
+    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>&1
+fi
 
 # aide configuration automation
 echo "Modifying /etc/aide.conf to use sha512..."
