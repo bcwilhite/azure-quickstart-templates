@@ -74,14 +74,14 @@
             "defaultValue": "Premium_LRS",
             "allowedValues": [ "Premium_LRS", "Standard_LRS", "StandardSSD_LRS" ],
             "metadata": {
-                "description": ""
+                "description": "You can choose between Azure managed disks types to support your workload or scenario."
             }
         },
         "osDiskEncryptionSetResourceId": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": ""
+                "description": "OS Disk Encryption Set resource id."
             }
         },
         "_artifactsLocation": {
@@ -92,10 +92,10 @@
             }
         },
         "_artifactsLocationSasToken": {
-            "type": "string",
+            "type": "secureString",
             "defaultValue": "",
             "metadata": {
-                "description": ""
+                "description": "SAS Token to access the storage location containing artifacts."
             }
         },
         "vmVirtualNetwork": {
@@ -322,7 +322,8 @@
         "auditAccountsWithNoPwdConfigName": "PasswordPolicy_msid232",
         "auditEtcPwdFilePermissionSetTo0644Configame": "PasswordPolicy_msid121",
         "storageApiVersion": "2019-06-01",
-        "diskEncryptionSet": { "id": "[parameters('osDiskEncryptionSetResourceId')]" }
+        "diskEncryptionSet": { "id": "[parameters('osDiskEncryptionSetResourceId')]" },
+        "artifactsLocationSasToken": "[if(equals(parameters('_artifactsLocationSasToken'), ''), if(contains(deployment().properties.templateLink.uri, '?'), split(deployment().properties.templateLink.uri, 'mainTemplate.json')[1], ''), parameters('_artifactsLocationSasToken'))]"
     },
     "resources": [
         {
@@ -398,7 +399,6 @@
                 "metrics": [
                     {
                         "category": "AllMetrics",
-                        "timeGrain": null,
                         "enabled": true,
                         "retentionPolicy": {
                             "enabled": true,
@@ -529,7 +529,7 @@
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
                     "Mode": "Push",
-                    "FileUri": "[concat(parameters('_artifactsLocation'), 'mof/localhost.mof', parameters('_artifactsLocationSasToken'))]"
+                    "FileUri": "[concat(parameters('_artifactsLocation'), 'mof/localhost.mof', variables('artifactsLocationSasToken'))]"
                 }
             }
         },
@@ -553,8 +553,8 @@
                 },
                 "protectedSettings": {
                     "fileUris": [
-                        "[concat(parameters('_artifactsLocation'), variables('images')[parameters('osVersion')].stigFileName, parameters('_artifactsLocationSasToken'))]",
-                        "[concat(parameters('_artifactsLocation'), 'mof/', parameters('osVersion'), '.mof', parameters('_artifactsLocationSasToken'))]"
+                        "[concat(parameters('_artifactsLocation'), variables('images')[parameters('osVersion')].stigFileName, variables('artifactsLocationSasToken'))]",
+                        "[concat(parameters('_artifactsLocation'), 'mof/', parameters('osVersion'), '.mof', variables('artifactsLocationSasToken'))]"
                     ],
                     "commandToExecute": "[concat('sh ', variables('images')[parameters('osVersion')].stigFileName, ' ', parameters('adminUsername'))]"
                 }
@@ -564,7 +564,7 @@
             "type": "Microsoft.Compute/virtualMachines/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
             "name": "[concat(parameters('vmName'), '/Microsoft.Insights/service')]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "condition": "[or(not(equals(parameters('diagnosticStorageResourceId'), '')), not(equals(parameters('logAnalyticsWorkspaceId'), '')))]",
             "dependsOn": [
                 "[parameters('vmName')]"
@@ -581,8 +581,7 @@
                             "days": "[parameters('logsRetentionInDays')]"
                         }
                     }
-                ],
-                "logs": []
+                ]
             }
         }
     ],

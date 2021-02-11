@@ -133,7 +133,7 @@
                         "name": "adminUsername",
                         "type": "Microsoft.Compute.UserNameTextBox",
                         "label": "Username",
-                        "defaultValue": "azureadmin",
+                        "defaultValue": "",
                         "toolTip": "Admin username for the virtual machine.",
                         "constraints": {
                             "required": true,
@@ -216,7 +216,7 @@
                         "name": "osDiskEncryptionType",
                         "type": "Microsoft.Common.DropDown",
                         "label": "Encryption type",
-                        "toolTip": "",
+                        "toolTip": "Select the encryption type for OS disk.",
                         "defaultValue": "(Default) Encryption at-rest with a platform-managed key",
                         "constraints": {
                             "allowedValues": [
@@ -278,7 +278,7 @@
                         },
                         "toolTip": {
                             "virtualNetwork": "Virtual networks are logically isolated from each other in Azure. You can configure their IP address ranges, subnets, route tables, gateways, and security settings, much like a traditional network in your data center. Virtual machines in the same virtual network can access each other by default.",
-                            "subnets": ""
+                            "subnets": "A subnet is a range of IP addresses in your virtual network, which can be used to isolate virtual machines from each other or from the Internet."
                         },
                         "defaultValue": {
                             "name": "[concat(resourceGroup().name, '-vnet')]",
@@ -356,10 +356,11 @@
         "outputs": {
             "location": "[location()]",
             "vmName": "[steps('instance').vmName]",
-            "vmAvailabilitySetName": "[steps('instance').vmAvailabilitySet.id]",
+            "availabilitySetResourceId": "[steps('instance').vmAvailabilitySet.id]",
             "osVersion": "[steps('instance').osVersion]",
             "vmSize": "[steps('instance').vmSize]",
             "adminUsername": "[steps('instance').adminUsername]",
+            "authenticationType": "[steps('instance').adminCredentials.authenticationType]",
             "adminPasswordOrKey": "[if(equals(steps('instance').adminCredentials.authenticationType, 'password'), steps('instance').adminCredentials.password, steps('instance').adminCredentials.sshPublicKey)]",
             "osDiskStorageType": "[steps('disk').osDiskStorageType]",
             "osDiskEncryptionSetResourceId": "[steps('disk').osDiskEncryptionType.id]",

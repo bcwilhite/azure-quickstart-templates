@@ -24,16 +24,17 @@ $ErrorActionPreference = "Stop"
 
 $context = (Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName).Context
 
-if (-not(Get-AzStorageContainer -Prefix $containerName -Context $context)) {
-    New-AzStorageContainer -Name $containerName -Context $context -Permission Container
+if (-not(Get-AzStorageContainer -Context $context -Prefix $containerName)) {
+    New-AzStorageContainer -Context $context -Name $containerName -Permission Off
 }
 
-Get-ChildItem -Path ".\artifacts" -File -Recurse | Set-AzStorageBlobContent -Container $containerName -Context $context -Force
+Get-ChildItem -Path ".\artifacts" -File -Recurse | Set-AzStorageBlobContent -Context $context -Container $containerName -Force
 
-$azureDeployUrl = New-AzStorageBlobSASToken -Container $containerName -Blob (Split-Path $azureDeployFile -leaf) -Context $context -FullUri -Permission r
-$createUIDefUrl = New-AzStorageBlobSASToken -Container $containerName -Blob (Split-Path $createUIDefFile -leaf) -Context $context -FullUri -Permission r
+$sasToken = New-AzStorageContainerSASToken -Context $context -Name $containerName -Permission rwdl
+$azureDeployUrl = (Get-AzStorageBlob -Context $context -Container $containerName -Blob $azureDeployFile).ICloudBlob.Uri.AbsoluteUri + $sasToken
+$createUIDefUrl = (Get-AzStorageBlob -Context $context -Container $containerName -Blob $createUIDefFile).ICloudBlob.Uri.AbsoluteUri + $sasToken
 
 $azureDeployUrlEncoded = [uri]::EscapeDataString($azureDeployUrl)
 $createUIDefUrlEncoded = [uri]::EscapeDataString($createUIDefUrl)
-$deployUrl = "https://portal.azure.com/#create/Microsoft.Template/uri/$($azureDeployUrlEncoded)/createUIDefinitionUri/$($createUIDefUrlEncoded)"
-$deployUrl
+"https://portal.azure.com/#create/Microsoft.Template/uri/$($azureDeployUrlEncoded)/createUIDefinitionUri/$($createUIDefUrlEncoded)"
+"https://portal.azure.us/#create/Microsoft.Template/uri/$($azureDeployUrlEncoded)/createUIDefinitionUri/$($createUIDefUrlEncoded)"
