@@ -1,4 +1,3 @@
-#!/bin/bash
 # dsc deployment automation
 echo "Move (OS Specific) .mof to configuration store as Pending.mof..."
 mv ./*.mof /etc/opt/omi/conf/dsc/configuration/Pending.mof
@@ -67,3 +66,4 @@ echo '0 5 * * * root /usr/sbin/aide --check | /bin/mail -s "$(hostname) - AIDE I
 # system reboot
 echo "Rebooting to apply STIG settings..."
 shutdown -r +1 2>&1
+exit 1
