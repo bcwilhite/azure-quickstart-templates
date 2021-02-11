@@ -50,8 +50,13 @@ BOOT_UUID=$(findmnt --noheadings --output uuid --target /boot)
 sed -i "s/\(GRUB_CMDLINE_LINUX=\".*[^\"]\+\)/\1 fips=1 boot=UUID=${BOOT_UUID}/g" /etc/default/grub
 echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
 grub2-mkconfig -o /boot/grub2/grub.cfg 2>&1
-echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
-grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>&1
+if grep -q 'ID="centos"' /etc/os-release ; then
+    echo "Regenerating /boot/efi/EFI/centos/grub.cfg (UEFI)..."
+    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg 2>&1
+else
+    echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
+    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>&1
+fi
 
 # aide configuration automation
 echo "Modifying /etc/aide.conf to use sha512..."
