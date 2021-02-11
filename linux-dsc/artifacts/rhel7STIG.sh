@@ -44,14 +44,14 @@ echo 'tmpfs /dev/shm tmpfs defaults,nodev,nosuid,noexec 0 0' >> /etc/fstab
 
 # fips automation
 echo "Recreating initramfs with dracut to support FIPS..."
-dracut --force --verbose 2>&1
+dracut --force --verbose
 echo "Modifying grub to support FIPS..."
 BOOT_UUID=$(findmnt --noheadings --output uuid --target /boot)
 sed -i "s/\(GRUB_CMDLINE_LINUX=\".*[^\"]\+\)/\1 fips=1 boot=UUID=${BOOT_UUID}/g" /etc/default/grub
 echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
-grub2-mkconfig -o /boot/grub2/grub.cfg 2>&1
+grub2-mkconfig -o /boot/grub2/grub.cfg
 echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
-grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>&1
+grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 
 # aide configuration automation
 echo "Modifying /etc/aide.conf to use sha512..."
