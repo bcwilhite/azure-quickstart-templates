@@ -1,4 +1,5 @@
 set -e
+
 # dsc deployment automation
 echo "Move (OS Specific) .mof to configuration store as Pending.mof..."
 mv ./*.mof /etc/opt/omi/conf/dsc/configuration/Pending.mof
