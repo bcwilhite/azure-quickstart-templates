@@ -1,5 +1,13 @@
 set -e
 
+# rhel 7.2/7.3 ssl cert issue remediation
+# https://docs.microsoft.com/en-us/azure/virtual-machines/workloads/redhat/redhat-rhui
+version=$(. /etc/os-release && echo $VERSION_ID)
+if [ ${version} == '7.2' ] || [ ${version} == '7.3' ]; then
+    echo "Executing yum update to disable all repos and enable all microsoft repos (7.2/7.3 fix)..."
+    yum update -y --disablerepo='*' --enablerepo='*microsoft*'
+fi
+
 # dsc deployment automation
 echo "Move (OS Specific) .mof to configuration store as Pending.mof..."
 mv ./*.mof /etc/opt/omi/conf/dsc/configuration/Pending.mof
@@ -7,7 +15,7 @@ echo "Execute Register.py --RefreshMode Push --ConfigurationMode ApplyOnly..."
 /opt/microsoft/dsc/Scripts/Register.py --RefreshMode Push --ConfigurationMode ApplyOnly > ./dscresults.log
 echo "Execute PerformRequiredConfigurationChecks.py to apply the Pending.mof configuration..."
 /opt/microsoft/dsc/Scripts/PerformRequiredConfigurationChecks.py >> ./dscresults.log
-if grep -q "ReturnValue=[^0]" ./dscresults.log; then
+if grep -q "MI_RESULT_FAILED" ./dscresults.log; then
     echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details, exitting returncode 1..."
     exit 1
 else

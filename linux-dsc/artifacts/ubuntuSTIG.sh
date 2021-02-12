@@ -11,7 +11,7 @@ echo "Execute Register.py --RefreshMode Push --ConfigurationMode ApplyOnly..."
 /opt/microsoft/dsc/Scripts/Register.py --RefreshMode Push --ConfigurationMode ApplyOnly > ./dscresults.log
 echo "Execute PerformRequiredConfigurationChecks.py to apply the Pending.mof configuration..."
 /opt/microsoft/dsc/Scripts/PerformRequiredConfigurationChecks.py >> ./dscresults.log
-if grep -q "ReturnValue=[^0]" ./dscresults.log; then
+if grep -q "MI_RESULT_FAILED" ./dscresults.log; then
     echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details, exitting returncode 1..."
     exit 1
 else
