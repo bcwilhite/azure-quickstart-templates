@@ -70,14 +70,18 @@ if rpm -q --quiet "dracut-fips"; then
     echo "Modifying grub to support FIPS..."
     BOOT_UUID=$(findmnt --noheadings --output uuid --target /boot)
     sed -i "s/\(GRUB_CMDLINE_LINUX=\".*[^\"]\+\)/\1 fips=1 boot=UUID=${BOOT_UUID}/g" /etc/default/grub
-    echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
-    grub2-mkconfig -o /boot/grub2/grub.cfg 2>> ./fipsresults.log
-    if grep -q 'ID="centos"' /etc/os-release ; then
+    if [ -f /boot/grub2/grub.cfg ]; then
+        echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
+        grub2-mkconfig -o /boot/grub2/grub.cfg 2>> ./fipsresults.log
+    fi
+    if [ -f /boot/efi/EFI/centos/grub.cfg ]; then
         echo "Regenerating /boot/efi/EFI/centos/grub.cfg (UEFI)..."
         grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg 2>> ./fipsresults.log
-    else
+    elif [ -f /boot/efi/EFI/redhat/grub.cfg ]; then
         echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
         grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>> ./fipsresults.log
+    else
+        echo "Skipping grub2-mkconfig for UEFI, no EFI grub.cfg file found..."
     fi
 else
     echo "Skipping fips automation due to dracut-fips package installation absence..."
