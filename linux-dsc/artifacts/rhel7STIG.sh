@@ -1,11 +1,17 @@
 set -e
 
+# only run once during deployment
+if [ -f ./azAutomationComplete ]; then
+    echo "STIG Automation completed, exiting..."
+    exit 0
+fi
+
 # rhel 7.2/7.3 ssl cert issue remediation
 # https://docs.microsoft.com/en-us/azure/virtual-machines/workloads/redhat/redhat-rhui
 version=$(. /etc/os-release && echo $VERSION_ID)
 if [ ${version} == '7.2' ] || [ ${version} == '7.3' ]; then
     echo "Executing yum update to disable all repos and enable all microsoft repos (7.2/7.3 fix)..."
-    yum update -y --disablerepo='*' --enablerepo='*microsoft*'
+    yum update -y --disablerepo='*' --enablerepo='*microsoft*' > ./yumupdateresults.log
 fi
 
 # dsc deployment automation
@@ -16,10 +22,9 @@ echo "Execute Register.py --RefreshMode Push --ConfigurationMode ApplyOnly..."
 echo "Execute PerformRequiredConfigurationChecks.py to apply the Pending.mof configuration..."
 /opt/microsoft/dsc/Scripts/PerformRequiredConfigurationChecks.py >> ./dscresults.log
 if grep -q "MI_RESULT_FAILED" ./dscresults.log; then
-    echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details, exitting returncode 1..."
-    exit 1
+    echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details..."
 else
-    echo "Applied Desired State Configurations successfully..."
+    echo "Applied Desired State Configuration successfully..."
 fi
 
 # authentication/password/session automation
@@ -27,7 +32,7 @@ echo "Backing up password-auth, postlogin and system-auth files..."
 cp --force /etc/pam.d/system-auth /etc/pam.d/backup.system-auth
 cp --force /etc/pam.d/password-auth /etc/pam.d/backup.password-auth
 cp --force /etc/pam.d/postlogin /etc/pam.d/backup.postlogin
-echo "Removing 'nullok' from both password-auth and system-auth files..."
+echo "Removing 'nullok' from password-auth and system-auth files..."
 sed -i 's/nullok //g' /etc/pam.d/system-auth /etc/pam.d/password-auth
 echo "Updating auth pam_faillock.so module in password-auth and system-auth files..."
 authRequiredFailDelay='auth        required      pam_faildelay.so delay=2000000'
@@ -59,31 +64,40 @@ echo "Setting tmpfs /dev/shm to mount using nodev, nosuid and noexec in /etc/fst
 echo 'tmpfs /dev/shm tmpfs defaults,nodev,nosuid,noexec 0 0' >> /etc/fstab
 
 # fips automation
-echo "Recreating initramfs with dracut to support FIPS..."
-dracut --force --verbose 2>&1
-echo "Modifying grub to support FIPS..."
-BOOT_UUID=$(findmnt --noheadings --output uuid --target /boot)
-sed -i "s/\(GRUB_CMDLINE_LINUX=\".*[^\"]\+\)/\1 fips=1 boot=UUID=${BOOT_UUID}/g" /etc/default/grub
-echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
-grub2-mkconfig -o /boot/grub2/grub.cfg 2>&1
-if grep -q 'ID="centos"' /etc/os-release ; then
-    echo "Regenerating /boot/efi/EFI/centos/grub.cfg (UEFI)..."
-    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg 2>&1
+if rpm -q --quiet "dracut-fips"; then
+    echo "Recreating initramfs with dracut to support FIPS..."
+    dracut --force --verbose 2> ./fipsresults.log
+    echo "Modifying grub to support FIPS..."
+    BOOT_UUID=$(findmnt --noheadings --output uuid --target /boot)
+    sed -i "s/\(GRUB_CMDLINE_LINUX=\".*[^\"]\+\)/\1 fips=1 boot=UUID=${BOOT_UUID}/g" /etc/default/grub
+    echo "Regenerating /boot/grub2/grub.cfg (BIOS)..."
+    grub2-mkconfig -o /boot/grub2/grub.cfg 2>> ./fipsresults.log
+    if grep -q 'ID="centos"' /etc/os-release ; then
+        echo "Regenerating /boot/efi/EFI/centos/grub.cfg (UEFI)..."
+        grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg 2>> ./fipsresults.log
+    else
+        echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
+        grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>> ./fipsresults.log
+    fi
 else
-    echo "Regenerating /boot/efi/EFI/redhat/grub.cfg (UEFI)..."
-    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg 2>&1
+    echo "Skipping fips automation due to dracut-fips package installation absence..."
 fi
 
 # aide configuration automation
-echo "Modifying /etc/aide.conf to use sha512..."
-sed -i 's/CONTENT_EX = sha256/CONTENT_EX = sha512/g' /etc/aide.conf
-echo "Executing /usr/sbin/aide --init..."
-/usr/sbin/aide --init
-echo "Moving /var/lib/aide/aide.db.new.gz to /var/lib/aide/aide.db.gz..."
-mv --verbose --force /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
-echo "Adding aide daily check cron job..."
-echo '0 5 * * * root /usr/sbin/aide --check | /bin/mail -s "$(hostname) - AIDE Integrity Check" root@localhost' > /etc/cron.daily/aide
+if rpm -q --quiet "aide"; then
+    echo "Modifying /etc/aide.conf to use sha512..."
+    sed -i 's/CONTENT_EX = sha256/CONTENT_EX = sha512/g' /etc/aide.conf
+    echo "Executing /usr/sbin/aide --init..."
+    /usr/sbin/aide --init > aideresults.log
+    echo "Moving /var/lib/aide/aide.db.new.gz to /var/lib/aide/aide.db.gz..."
+    mv --verbose --force /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+    echo "Adding aide daily check cron job..."
+    echo '0 5 * * * root /usr/sbin/aide --check | /bin/mail -s "$(hostname) - AIDE Integrity Check" root@localhost' > /etc/cron.daily/aide
+else
+    echo "Skipping aide automation due to aide package installation absence..."
+fi
 
 # system reboot
 echo "Rebooting to apply STIG settings..."
+touch ./azAutomationComplete
 shutdown -r +1 2>&1

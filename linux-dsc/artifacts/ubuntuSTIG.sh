@@ -1,8 +1,14 @@
 set -e
 
+# only run once during deployment
+if [ -f ./azAutomationComplete ]; then
+    echo "STIG Automation completion detected, exiting..."
+    exit 0
+fi
+
 # apt-get update to assist nxPackage dsc automation
 echo "Executing apt-get update..."
-apt-get update -q
+apt-get update -q > ./aptgetupdateresults.log
 
 # dsc deployment automation
 echo "Move (OS Specific) .mof to configuration store as Pending.mof..."
@@ -12,10 +18,9 @@ echo "Execute Register.py --RefreshMode Push --ConfigurationMode ApplyOnly..."
 echo "Execute PerformRequiredConfigurationChecks.py to apply the Pending.mof configuration..."
 /opt/microsoft/dsc/Scripts/PerformRequiredConfigurationChecks.py >> ./dscresults.log
 if grep -q "MI_RESULT_FAILED" ./dscresults.log; then
-    echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details, exitting returncode 1..."
-    exit 1
+    echo "Failed to apply Desired State Configuration successfully, check dscresults.log for more details..."
 else
-    echo "Applied Desired State Configurations successfully..."
+    echo "Applied Desired State Configuration successfully..."
 fi
 
 # authentication/password/session automation
@@ -62,8 +67,9 @@ chmod -c 0600 /var/log/audit/*
 echo "Adding 'audit=1' to /etc/default/grub to enable auditing at system startup..."
 cp --force /etc/default/grub /etc/default/backup.grub
 sed -i 's/\(GRUB_CMDLINE_LINUX="\)/\1audit=1/g' /etc/default/grub
-update-grub 2>&1
+update-grub 2> ./updategrubresults.log
 
 # system reboot
 echo "Rebooting to apply STIG settings..."
+touch ./azAutomationComplete
 shutdown -r +1 2>&1
