@@ -128,7 +128,7 @@
         },
         "subnetName": {
             "type": "string",
-            "defaultValue": "subnet1",
+            "defaultValue": "default",
             "metadata": {
                 "description": "Subnet name for the VM Image."
             }
@@ -582,6 +582,19 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "pid-212401b4-aef7-457e-815d-3321a6407400",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
             }
         }
     ],
