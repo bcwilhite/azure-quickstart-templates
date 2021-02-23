@@ -87,7 +87,7 @@
         "customData": {
             "type": "string",
             "metadata": {
-                "description": "Pass a script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
+                "description": "Pass a base64 encoded script into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
             }
         },
         "_artifactsLocation": {
@@ -448,7 +448,7 @@
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
                     "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
-                    "customData": "[base64(parameters('customData'))]"
+                    "customData": "[parameters('customData')]"
                 },
                 "availabilitySet": "[if(equals(parameters('availabilitySetResourceId'), ''), json('null'), parameters('availabilitySetResourceId'))]",
                 "diagnosticsProfile": {
