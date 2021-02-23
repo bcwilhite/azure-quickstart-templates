@@ -86,6 +86,7 @@
         },
         "customData": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "Pass a base64 encoded script into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
             }
@@ -448,7 +449,7 @@
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
                     "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
-                    "customData": "[parameters('customData')]"
+                    "customData": "[if(equals(parameters('customData'), ''), json('null'), parameters('customData'))]"
                 },
                 "availabilitySet": "[if(equals(parameters('availabilitySetResourceId'), ''), json('null'), parameters('availabilitySetResourceId'))]",
                 "diagnosticsProfile": {
