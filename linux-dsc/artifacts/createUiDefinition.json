@@ -380,7 +380,7 @@
             "adminPasswordOrKey": "[if(equals(steps('instance').adminCredentials.authenticationType, 'password'), steps('instance').adminCredentials.password, steps('instance').adminCredentials.sshPublicKey)]",
             "osDiskStorageType": "[steps('disk').osDiskStorageType]",
             "osDiskEncryptionSetResourceId": "[steps('disk').osDiskEncryptionType.id]",
-            "customData": "[if(not(empty(steps('advanced').customData)), steps('advanced').customData, '')]",
+            "customData": "[if(not(empty(steps('management').customData)), steps('management').customData, '')]",
             "vmVirtualNetwork": "[steps('networking').vmVirtualNetwork.name]",
             "virtualNetworkNewOrExisting": "[steps('networking').vmVirtualNetwork.newOrExisting]",
             "virtualNetworkResourceGroupName": "[steps('networking').vmVirtualNetwork.resourceGroup]",
