@@ -325,9 +325,6 @@
                 ]
             }
         },
-        "auditRemoteConnectionWithNoPwdConfigName": "PasswordPolicy_msid110",
-        "auditAccountsWithNoPwdConfigName": "PasswordPolicy_msid232",
-        "auditEtcPwdFilePermissionSetTo0644Configame": "PasswordPolicy_msid121",
         "storageApiVersion": "2019-06-01",
         "diskEncryptionSet": { "id": "[parameters('osDiskEncryptionSetResourceId')]" },
         "artifactsLocationSasToken": "[if(equals(parameters('_artifactsLocationSasToken'), ''), if(contains(deployment().properties.templateLink.uri, '?'), split(deployment().properties.templateLink.uri, 'mainTemplate.json')[1], ''), parameters('_artifactsLocationSasToken'))]"
@@ -463,66 +460,6 @@
             ]
         },
         {
-            "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
-            "apiVersion": "2018-11-20",
-            "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', variables('auditRemoteConnectionWithNoPwdConfigName'))]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
-            ],
-            "properties": {
-                "guestConfiguration": {
-                    "name": "[variables('auditRemoteConnectionWithNoPwdConfigName')]",
-                    "version": "1.*"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
-            "apiVersion": "2018-11-20",
-            "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', variables('auditAccountsWithNoPwdConfigName'))]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
-            ],
-            "properties": {
-                "guestConfiguration": {
-                    "name": "[variables('auditAccountsWithNoPwdConfigName')]",
-                    "version": "1.*"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
-            "apiVersion": "2018-11-20",
-            "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', variables('auditEtcPwdFilePermissionSetTo0644Configame'))]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
-            ],
-            "properties": {
-                "guestConfiguration": {
-                    "name": "[variables('auditEtcPwdFilePermissionSetTo0644Configame')]",
-                    "version": "1.*"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2019-07-01",
-            "name": "[concat(parameters('vmName'), '/deploy-guest-configuration')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.GuestConfiguration",
-                "type": "ConfigurationforLinux",
-                "typeHandlerVersion": "1.0",
-                "autoUpgradeMinorVersion": true
-            }
-        },
-        {
             "apiVersion": "2020-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmName'),'/setup-linux-dsc')]",
@@ -547,7 +484,6 @@
             "name": "[concat(parameters('vmName'), '/setup-linux-dsc-stig')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions/', parameters('vmName'), 'deploy-guest-configuration')]",
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions/', parameters('vmName'), 'setup-linux-dsc')]"
             ],
             "properties": {
