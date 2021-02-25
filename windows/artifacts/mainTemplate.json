@@ -9,13 +9,6 @@
                 "description": "Name of the virtual machine."
             }
         },
-        "vmCount": {
-            "type": "int",
-            "defaultValue": 1,
-            "metadata": {
-                "description": "Virtual Machine count."
-            }
-        },
         "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
@@ -132,18 +125,11 @@
                 "description": "Subnet prefix of the virtual network"
             }
         },
-        "configureAvailabilitySet" : {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Configure Availability Set."
-            }
-        },
-        "availabilitySetResourceName": {
+        "availabilitySetResourceId": {
             "type": "string",
-            "defaultValue": "stig-vm-as",
+            "defaultValue": "",
             "metadata": {
-                "description": "(Optional) Availability Set name."
+                "description": "(Optional) Availability Set resource id."
             }
         },
         "logsRetentionInDays": {
@@ -178,9 +164,6 @@
         },
         "subnetRef": "[concat(variables('vnetId')[parameters('virtualNetworkNewOrExisting')],'/subnets/',parameters('subnetName'))]",
         "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg')]",
-        "availabilitySetId": {
-            "id": "[if(bool(parameters('configureAvailabilitySet')), resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetResourceName')), json('null'))]"
-        },
         "requiredModulesFile": "RequiredModules.ps1",
         "installPSModulesFile": "InstallModules.ps1",
         "generateStigChecklist": "GenerateStigChecklist.ps1",
@@ -189,20 +172,6 @@
         "artifactsLocationSasToken": "[if(equals(parameters('_artifactsLocationSasToken'), ''), if(contains(deployment().properties.templateLink.uri, '?'), split(deployment().properties.templateLink.uri, 'mainTemplate.json')[1], ''), parameters('_artifactsLocationSasToken'))]"
     },
     "resources": [
-	    {
-            "type": "Microsoft.Compute/availabilitySets",
-            "apiVersion": "2019-03-01",
-            "name": "[parameters('availabilitySetResourceName')]",
-            "location": "[parameters('location')]",
-            "condition": "[parameters('configureAvailabilitySet')]",
-            "properties": {
-                "platformFaultDomainCount": 2,
-                "platformUpdateDomainCount": 5
-            },
-            "sku": {
-                "name": "Aligned"
-            }
-        },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-06-01",
@@ -242,15 +211,11 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2020-06-01",
-            "name": "[concat(variables('nicName'), copyIndex())]",
+            "name": "[variables('nicName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('vmVirtualNetwork'))]"
             ],
-            "copy": {
-                "name": "nicLoop",
-                "count": "[parameters('vmCount')]"
-            },
             "properties": {
                 "ipConfigurations": [
                     {
@@ -268,16 +233,12 @@
         {
             "type": "Microsoft.Network/networkInterfaces/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(variables('nicName'), copyIndex(), '/Microsoft.Insights/service')]",
+            "name": "[concat(variables('nicName'), '/Microsoft.Insights/service')]",
             "location": "[parameters('location')]",
             "condition": "[or(not(equals(parameters('diagnosticStorageResourceId'), '')), not(equals(parameters('logAnalyticsWorkspaceId'), '')))]",
             "dependsOn": [
-                "[concat(variables('nicName'), copyIndex())]"
+                "[variables('nicName')]"
             ],
-            "copy": {
-                "name": "nicDiagnosticsLoop",
-                "count": "[parameters('vmCount')]"
-            },
             "properties": {
                 "storageAccountId": "[if(equals(parameters('diagnosticStorageResourceId'), ''), json('null'), parameters('diagnosticStorageResourceId'))]",
                 "workspaceId": "[if(equals(parameters('logAnalyticsWorkspaceId'), ''), json('null'), parameters('logAnalyticsWorkspaceId'))]",
@@ -296,22 +257,17 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2020-06-01",
-            "name": "[concat(parameters('vmName'), copyIndex())]",
+            "name": "[parameters('vmName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "nicLoop",
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetResourceName'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
             ],
-            "copy": {
-                "name": "virtualMachineLoop",
-                "count": "[parameters('vmCount')]"
-            },
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
                 },
                 "osProfile": {
-                    "computerName": "[concat(parameters('vmName'), copyIndex())]",
+                    "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 },
@@ -333,11 +289,11 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex()))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
                         }
                     ]
                 },
-                "availabilitySet": "[if(bool(parameters('configureAvailabilitySet')), variables('availabilitySetId'), json('null'))]",
+                "availabilitySet": "[if(equals(parameters('availabilitySetResourceId'), ''), json('null'), parameters('availabilitySetResourceId'))]",
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": "[if(equals(parameters('diagnosticStorageResourceId'), ''), false(), true())]",
@@ -353,7 +309,7 @@
                     "location": "[parameters('location')]",
                     "condition": "[not(equals(parameters('_artifactsLocation'), ''))]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('vmName'), copyIndex()))]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Compute",
@@ -378,8 +334,8 @@
                     "location": "[parameters('location')]",
                     "condition": "[not(equals(parameters('_artifactsLocation'), ''))]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('vmName'), copyIndex()))]",
-                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'), copyIndex()), 'install-powershell-modules')]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
+                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'install-powershell-modules')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -401,16 +357,12 @@
         {
             "type": "Microsoft.Compute/virtualMachines/providers/diagnosticSettings",
             "apiVersion": "2017-05-01-preview",
-            "name": "[concat(parameters('vmName'), copyIndex(), '/Microsoft.Insights/service')]",
+            "name": "[concat(parameters('vmName'), '/Microsoft.Insights/service')]",
             "location": "[parameters('location')]",
             "condition": "[or(not(equals(parameters('diagnosticStorageResourceId'), '')), not(equals(parameters('logAnalyticsWorkspaceId'), '')))]",
             "dependsOn": [
-                "[concat(parameters('vmName'), copyIndex())]"
+                "[parameters('vmName')]"
             ],
-            "copy": {
-                "name": "vmDiagnosticsLoop",
-                "count": "[parameters('vmCount')]"
-            },
             "properties": {
                 "storageAccountId": "[if(equals(parameters('diagnosticStorageResourceId'), ''), json('null'), parameters('diagnosticStorageResourceId'))]",
                 "workspaceId": "[if(equals(parameters('logAnalyticsWorkspaceId'), ''), json('null'), parameters('logAnalyticsWorkspaceId'))]",
