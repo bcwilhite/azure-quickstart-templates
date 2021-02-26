@@ -63,7 +63,8 @@
                 "RHEL74",
                 "RHEL73",
                 "RHEL72",
-                "Ubuntu1804"
+                "Ubuntu1804",
+                "Ubuntu1804-DataScience"
             ],
             "metadata": {
                 "description": "The Linux version for the VM. This will pick a fully patched image of this given Linux version."
@@ -88,7 +89,7 @@
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Pass a script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
+                "description": "Pass a base64 encoded script into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
             }
         },
         "_artifactsLocation": {
@@ -312,6 +313,15 @@
                     "version": "latest"
                 },
                 "stigFileName": "ubuntuSTIG.sh"
+            },
+            "Ubuntu1804-DataScience": {
+                "reference": {
+                    "publisher": "microsoft-dsvm",
+                    "offer": "ubuntu-1804",
+                    "sku": "1804",
+                    "version": "latest"
+                },
+                "stigFileName": "ubuntuSTIG.sh"
             }
         },
         "linuxConfiguration": {
@@ -446,7 +456,7 @@
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
                     "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
-                    "customData": "[if(equals(parameters('customData'), ''), json('null'), base64(parameters('customData')))]"
+                    "customData": "[if(equals(parameters('customData'), ''), json('null'), parameters('customData'))]"
                 },
                 "availabilitySet": "[if(equals(parameters('availabilitySetResourceId'), ''), json('null'), parameters('availabilitySetResourceId'))]",
                 "diagnosticsProfile": {
