@@ -105,6 +105,10 @@
                                 {
                                     "value": "Ubuntu1804",
                                     "label": "Canonical Ubuntu 18.04 LTS"
+                                },
+                                {
+                                    "value": "Ubuntu1804-DataScience",
+                                    "label": "Data Science Virtual Machine - Ubuntu 18.04"
                                 }
                             ],
                             "required": true
