@@ -105,10 +105,6 @@
                                 {
                                     "value": "Ubuntu1804",
                                     "label": "Canonical Ubuntu 18.04 LTS"
-                                },
-                                {
-                                    "value": "Ubuntu1804-DataScience",
-                                    "label": "Data Science Virtual Machine - Ubuntu 18.04"
                                 }
                             ],
                             "required": true
@@ -359,7 +355,7 @@
                         "name": "textBlock1",
                         "type": "Microsoft.Common.TextBlock",
                         "options": {
-                            "text": "Custom Data"
+                            "text": "Custom data and cloud init"
                         },
                         "visible": "[or(equals(steps('instance').osVersion, 'RHEL77'), equals(steps('instance').osVersion, 'RHEL78'), equals(steps('instance').osVersion, 'Ubuntu1804'), equals(steps('instance').osVersion, 'CentOS77'), equals(steps('instance').osVersion, 'CentOS78'), equals(steps('instance').osVersion, 'CentOS79'))]"
                     },
@@ -367,7 +363,7 @@
                         "name": "textBlock2",
                         "type": "Microsoft.Common.TextBlock",
                         "options": {
-                            "text": "Pass a script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
+                            "text": "Pass a cloud-init script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
                         },
                         "visible": "[or(equals(steps('instance').osVersion, 'RHEL77'), equals(steps('instance').osVersion, 'RHEL78'), equals(steps('instance').osVersion, 'Ubuntu1804'), equals(steps('instance').osVersion, 'CentOS77'), equals(steps('instance').osVersion, 'CentOS78'), equals(steps('instance').osVersion, 'CentOS79'))]"
                     },
