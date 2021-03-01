@@ -89,7 +89,7 @@
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "Pass a base64 encoded script into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
+                "description": "Pass a script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
             }
         },
         "_artifactsLocation": {
@@ -148,6 +148,13 @@
                 "description": "Subnet prefix of the virtual network"
             }
         },
+        "applicationSecurityGroupResourceId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "(Optional) Application Security Group resource id."
+            }
+        },
         "availabilitySetResourceId": {
             "type": "string",
             "defaultValue": "",
@@ -187,6 +194,11 @@
         },
         "subnetRef": "[concat(variables('vnetId')[parameters('virtualNetworkNewOrExisting')],'/subnets/',parameters('subnetName'))]",
         "networkSecurityGroupName": "[concat(parameters('vmName'), '-nsg')]",
+        "applicationSecurityGroup": [
+            {
+                "id": "[parameters('applicationSecurityGroupResourceId')]"
+            }
+        ],
         "images": {
             "CentOS79": {
                 "reference": {
@@ -385,6 +397,7 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('vmVirtualNetwork'))]"
             ],
             "properties": {
+                "networkSecurityGroup": { "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]" },
                 "ipConfigurations": [
                     {
                         "name": "ipconfig1",
@@ -392,7 +405,8 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[variables('subnetRef')]"
-                            }
+                            },
+                            "applicationSecurityGroups": "[if(equals(parameters('applicationSecurityGroupResourceId'), ''), json('null'), variables('applicationSecurityGroup'))]"
                         }
                     }
                 ]
@@ -456,7 +470,7 @@
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
                     "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
-                    "customData": "[if(equals(parameters('customData'), ''), json('null'), parameters('customData'))]"
+                    "customData": "[if(equals(parameters('customData'), ''), json('null'), base64(parameters('customData')))]"
                 },
                 "availabilitySet": "[if(equals(parameters('availabilitySetResourceId'), ''), json('null'), parameters('availabilitySetResourceId'))]",
                 "diagnosticsProfile": {
