@@ -161,4 +161,4 @@ $null = New-AzGalleryImageVersion @newAzGalleryImageVerParams
 
 # Remove Snapshot
 Write-Host "Removing VM Snapshot..."
-$snapshot | Remove-AzSnapshot -Force
+$null = $snapshot | Remove-AzSnapshot -Force

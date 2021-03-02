@@ -84,6 +84,12 @@ $configurationData = @{
             StigType  = 'Ubuntu'
             OsVersion = '18.04'
             SkipRule  = @('V-219159', 'V-219167.a', 'V-219167.b', 'V-219167.c')
+        },
+        @{
+            NodeName  = 'Ubuntu1804-DataScience'
+            StigType  = 'Ubuntu'
+            OsVersion = '18.04'
+            SkipRule  = @('V-219159', 'V-219167.a', 'V-219167.b', 'V-219167.c')
         }
     )
 }
