@@ -391,7 +391,7 @@
                             "required": false,
                             "validations": [
                                 {
-                                    "regex": "^.*$",
+                                    "regex": ".*",
                                     "message": "Allows any charaters, numbers of symbols."
                                 }
                             ]
