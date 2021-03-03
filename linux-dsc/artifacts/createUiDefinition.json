@@ -119,8 +119,8 @@
                         "name": "infoBox0",
                         "type": "Microsoft.Common.InfoBox",
                         "options": {
-                            "icon": "Warning",
-                            "text": "The Ubuntu Data Science VM contains Ubuntu 18.04 STIG automation only, no other STIG automation is provided."
+                            "icon": "Info",
+                            "text": "The Ubuntu Data Science VM includes STIG remediation for Ubuntu 18.04.\n"
                         },
                         "visible": "[equals(steps('instance').osVersion, 'Ubuntu1804-DataScience')]"
                     },
@@ -444,6 +444,7 @@
             "subnetName": "[steps('networking').vmVirtualNetwork.subnets.subnet1.name]",
             "applicationSecurityGroupResourceId": "[steps('networking').vmApplicationSecurityGroup.id]",
             "diagnosticStorageResourceId": "[steps('management').diagnosticStorageAccount.id]",
+            "diagnosticStorageAccountName": "[steps('management').diagnosticStorageAccount.name]",
             "logAnalyticsWorkspaceId": "[steps('management').logAnalyticsWorkspace.id]"
         }
     }
