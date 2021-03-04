@@ -6,7 +6,7 @@
         "basics": [],
         "steps": [
             {
-                "name": "instance",
+                "name": "instance", 
                 "label": "Instance",
                 "subLabel": {
                     "preValidation": "Configure the virtual machine's resources and settings",
