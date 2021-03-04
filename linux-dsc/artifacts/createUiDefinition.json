@@ -120,7 +120,7 @@
                         "type": "Microsoft.Common.InfoBox",
                         "options": {
                             "icon": "Info",
-                            "text": "The Ubuntu Data Science VM contains Ubuntu 18.04 STIG automation only.\nNo additional STIG automation is provided."
+                            "text": "The Ubuntu Data Science VM contains Ubuntu 18.04 STIG automation only. No additional STIG automation is provided."
                         },
                         "visible": "[equals(steps('instance').osVersion, 'Ubuntu1804-DataScience')]"
                     },
