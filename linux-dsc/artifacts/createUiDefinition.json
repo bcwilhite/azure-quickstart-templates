@@ -6,7 +6,7 @@
         "basics": [],
         "steps": [
             {
-                "name": "instance", 
+                "name": "instance",
                 "label": "Instance",
                 "subLabel": {
                     "preValidation": "Configure the virtual machine's resources and settings",
@@ -148,7 +148,7 @@
                         "type": "Microsoft.Compute.UserNameTextBox",
                         "label": "Username",
                         "defaultValue": "",
-                        "toolTip": "Admin username for the virtual machine.",
+                        "toolTip": "Admin username for the virtual  machine.",
                         "constraints": {
                             "required": true,
                             "regex": "^[a-z0-9A-Z]{1,30}$",
