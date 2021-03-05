@@ -84,6 +84,13 @@
                 "description": "OS Disk Encryption Set resource id."
             }
         },
+        "customData": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Pass a script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
+            }
+        },
         "_artifactsLocation": {
             "type": "string",
             "defaultValue": "[split(deployment().properties.templateLink.uri, 'mainTemplate.json')[0]]",
@@ -170,6 +177,13 @@
                 "description": "(Optional) Log Analytics workspace resource id."
             }
         }
+    },
+    "customData": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Pass a script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
+            }
     },
     "variables": {
         "nicName": "[concat(parameters('vmName'), '-nic')]",
@@ -441,7 +455,8 @@
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
-                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
+                    "customData": "[if(equals(parameters('customData'), ''), json('null'), parameters('customData'))]"
                 },
                 "availabilitySet": "[if(equals(parameters('availabilitySetResourceId'), ''), json('null'), parameters('availabilitySetResourceId'))]",
                 "diagnosticsProfile": {
