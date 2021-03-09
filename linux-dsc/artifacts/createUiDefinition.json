@@ -148,7 +148,7 @@
                         "type": "Microsoft.Compute.UserNameTextBox",
                         "label": "Username",
                         "defaultValue": "",
-                        "toolTip": "Admin username for the virtual  machine.",
+                        "toolTip": "Admin username for the virtual machine.",
                         "constraints": {
                             "required": true,
                             "regex": "^[a-z0-9A-Z]{1,30}$",
@@ -384,7 +384,7 @@
                         "options": {
                             "text": "Custom data and cloud init"
                         },
-                        "visible": true
+                        "visible": "[or(equals(steps('instance').osVersion, 'RHEL77'), equals(steps('instance').osVersion, 'RHEL78'), equals(steps('instance').osVersion, 'Ubuntu1804'), equals(steps('instance').osVersion, 'Ubuntu1804-DataScience'), equals(steps('instance').osVersion, 'CentOS77'), equals(steps('instance').osVersion, 'CentOS78'), equals(steps('instance').osVersion, 'CentOS79'))]"
                     },
                     {
                         "name": "textBlock2",
@@ -392,7 +392,7 @@
                         "options": {
                             "text": "Pass a cloud-init script, configuration file, or other data into the virtual machine while it is being provisioned. The data will be saved on the VM in a known location."
                         },
-                        "visible": true
+                        "visible": "[or(equals(steps('instance').osVersion, 'RHEL77'), equals(steps('instance').osVersion, 'RHEL78'), equals(steps('instance').osVersion, 'Ubuntu1804'), equals(steps('instance').osVersion, 'Ubuntu1804-DataScience'), equals(steps('instance').osVersion, 'CentOS77'), equals(steps('instance').osVersion, 'CentOS78'), equals(steps('instance').osVersion, 'CentOS79'))]"
                     },
                     {
                         "name": "customData",
@@ -409,7 +409,7 @@
                                 }
                             ]
                         },
-                        "visible": true
+                        "visible": "[or(equals(steps('instance').osVersion, 'RHEL77'), equals(steps('instance').osVersion, 'RHEL78'), equals(steps('instance').osVersion, 'Ubuntu1804'), equals(steps('instance').osVersion, 'Ubuntu1804-DataScience'), equals(steps('instance').osVersion, 'CentOS77'), equals(steps('instance').osVersion, 'CentOS78'), equals(steps('instance').osVersion, 'CentOS79'))]"
                     },
                     {
                         "name": "infoBox0",
@@ -419,7 +419,7 @@
                             "text": "Your image must have code to support consumption of custom data. If your image supports cloud-init, custom-data will be processed by cloud-init.",
                             "uri": "http://go.microsoft.com/fwlink/?LinkId=2125807"
                         },
-                        "visible": true
+                        "visible": "[or(equals(steps('instance').osVersion, 'RHEL77'), equals(steps('instance').osVersion, 'RHEL78'), equals(steps('instance').osVersion, 'Ubuntu1804'), equals(steps('instance').osVersion, 'Ubuntu1804-DataScience'), equals(steps('instance').osVersion, 'CentOS77'), equals(steps('instance').osVersion, 'CentOS78'), equals(steps('instance').osVersion, 'CentOS79'))]"
                     }
                 ]
             }
@@ -444,7 +444,6 @@
             "subnetName": "[steps('networking').vmVirtualNetwork.subnets.subnet1.name]",
             "applicationSecurityGroupResourceId": "[steps('networking').vmApplicationSecurityGroup.id]",
             "diagnosticStorageResourceId": "[steps('management').diagnosticStorageAccount.id]",
-            "diagnosticStorageAccountName": "[steps('management').diagnosticStorageAccount.name]",
             "logAnalyticsWorkspaceId": "[steps('management').logAnalyticsWorkspace.id]"
         }
     }
